@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: control_entrada.CapturaHuella
+Class-Path: dpfpenrollment.jar dpfpverification.jar dpotapi.jar dpotjni.jar ij.jar postgresql.jar
+
