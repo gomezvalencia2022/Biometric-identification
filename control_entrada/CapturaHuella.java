@@ -28,6 +28,12 @@ import java.awt.Component;
 /*      */ import java.awt.BorderLayout;
 /*      */ import java.awt.Dimension;
 /*      */ import java.awt.EventQueue;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.Cursor;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 /*      */ import java.awt.Font;
 /*      */ import java.awt.Image;
 /*      */ import java.awt.event.ActionEvent;
@@ -68,9 +74,19 @@ import java.awt.Component;
 /*      */ import javax.swing.Timer;
 /*      */ import javax.swing.UIManager;
 /*      */ 
-/*      */ public class CapturaHuella extends JDialog {
+/*      */ public class CapturaHuella extends javax.swing.JFrame {
 /*   68 */   Object EncontroHuella = null;
 /*   69 */   String fechaActual = "";
+/*      */   private String cachedEmployeeId  = null;
+/*      */   private String cachedEmployerId  = null;
+/*      */   private String cachedTurnoId     = null;
+/*      */   private String cachedKioskoId       = null; // ID del kiosko asignado a este dispositivo
+/*      */   private String cachedKioskoNombre  = null; // Nombre del kiosko para mostrar en UI
+/*      */   private String cachedKioskoUbicacion = null; // Ubicacion (coords o direccion) para guardar en BD
+/*      */   private boolean cachedDispositivoRegistrado = false; // true si la MAC esta registrada en dispositivos_biometricos
+/*      */   private javax.swing.JTextField jTUbicacion;
+/*      */   private javax.swing.JTextField jTObservaciones;
+/*      */   private javax.swing.JLabel     jLblTurno;
 /*      */ 
 /*      */ 
 /*      */ 
@@ -93,209 +109,264 @@ import java.awt.Component;
 /*      */ 
 /*      */ 
 /*      */   
-/*      */   private void initComponents() {
-/*   93 */     this.panHuellas = new JPanel();
-/*   94 */     this.jPanel1 = new JPanel();
-/*   95 */     this.lblImagenHuella = new JLabel();
-/*   96 */     this.panBtns = new JPanel();
-/*   97 */     this.jPanel2 = new JPanel();
-/*   98 */     this.btnSalir = new JButton();
-/*   99 */     this.btnIdentificar = new JButton();
-/*  100 */     this.jPanel4 = new JPanel();
-/*  101 */     this.jScrollPane1 = new JScrollPane();
-/*  102 */     this.txtArea = new JTextArea();
-/*  103 */     this.jPanel3 = new JPanel();
-/*  104 */     this.jLabel2 = new JLabel();
-/*  105 */     this.jLabel3 = new JLabel();
-/*  106 */     this.jTNombres = new JTextField();
-/*  107 */     this.jTApellidos = new JTextField();
-/*  108 */     this.jLabel5 = new JLabel();
-/*  109 */     this.jTcedula = new JTextField();
-/*  110 */     this.jLabel1 = new JLabel();
-/*      */     
-/*  112 */     setDefaultCloseOperation(2);
-/*  113 */     setTitle("Gestión de Huellas Dactilares");
-/*  114 */     setResizable(false);
-/*  115 */     addWindowListener(new WindowAdapter() {
-/*      */           public void windowClosing(WindowEvent evt) {
-/*  117 */             CapturaHuella.this.formWindowClosing(evt);
-/*      */           }
-/*      */           public void windowOpened(WindowEvent evt) {
-/*  120 */             CapturaHuella.this.formWindowOpened(evt);
-/*      */           }
-/*      */         });
-/*      */     
-/*  124 */     this.panHuellas.setBorder(BorderFactory.createTitledBorder(null, "Huella Digital Capturada", 2, 0));
-/*  125 */     this.panHuellas.setAutoscrolls(true);
-/*  126 */     this.panHuellas.setPreferredSize(new Dimension(400, 270));
-/*      */     
-/*  128 */     this.jPanel1.setBorder(BorderFactory.createBevelBorder(1));
-/*  129 */     this.jPanel1.setLayout(new BorderLayout());
-/*  130 */     this.jPanel1.add(this.lblImagenHuella, "Center");
-/*      */     
-/*  132 */     GroupLayout panHuellasLayout = new GroupLayout(this.panHuellas);
-/*  133 */     this.panHuellas.setLayout(panHuellasLayout);
-/*  134 */     panHuellasLayout.setHorizontalGroup(panHuellasLayout
-/*  135 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  136 */         .addComponent(this.jPanel1, -2, 420, -2));
-/*      */     
-/*  138 */     panHuellasLayout.setVerticalGroup(panHuellasLayout
-/*  139 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  140 */         .addComponent(this.jPanel1, -2, 247, -2));
-/*      */ 
-/*      */     
-/*  143 */     this.panBtns.setBorder(BorderFactory.createTitledBorder(null, "Acciones", 2, 0));
-/*  144 */     this.panBtns.setPreferredSize(new Dimension(400, 190));
-/*  145 */     this.panBtns.setLayout(new BorderLayout());
-/*      */     
-/*  147 */     this.jPanel2.setPreferredSize(new Dimension(366, 90));
-/*      */     
-/*  149 */     this.btnSalir.setText("Salir");
-/*  150 */     this.btnSalir.addActionListener(new ActionListener() {
-/*      */           public void actionPerformed(ActionEvent evt) {
-/*  152 */             CapturaHuella.this.btnSalirActionPerformed(evt);
-/*      */           }
-/*      */         });
-/*      */     
-/*  156 */     this.btnIdentificar.setText("  Registrar Huella");
-/*  157 */     this.btnIdentificar.setPreferredSize(new Dimension(71, 23));
-/*  158 */     this.btnIdentificar.addActionListener(new ActionListener() {
-/*      */           public void actionPerformed(ActionEvent evt) {
-/*  160 */             CapturaHuella.this.btnIdentificarActionPerformed(evt);
-/*      */           }
-/*      */         });
-/*      */     
-/*  164 */     GroupLayout jPanel2Layout = new GroupLayout(this.jPanel2);
-/*  165 */     this.jPanel2.setLayout(jPanel2Layout);
-/*  166 */     jPanel2Layout.setHorizontalGroup(jPanel2Layout
-/*  167 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  168 */         .addGroup(jPanel2Layout.createSequentialGroup()
-/*  169 */           .addGap(41, 41, 41)
-/*  170 */           .addComponent(this.btnIdentificar, -2, 139, -2)
-/*  171 */           .addGap(50, 50, 50)
-/*  172 */           .addComponent(this.btnSalir, -2, 128, -2)
-/*  173 */           .addContainerGap(62, 32767)));
-/*      */     
-/*  175 */     jPanel2Layout.setVerticalGroup(jPanel2Layout
-/*  176 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  177 */         .addGroup(jPanel2Layout.createSequentialGroup()
-/*  178 */           .addGap(16, 16, 16)
-/*  179 */           .addGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-/*  180 */             .addComponent(this.btnSalir, -1, -1, 32767)
-/*  181 */             .addComponent(this.btnIdentificar, -1, 51, 32767))
-/*  182 */           .addGap(23, 23, 23)));
-/*      */ 
-/*      */     
-/*  185 */     this.panBtns.add(this.jPanel2, "North");
-/*      */     
-/*  187 */     this.jPanel4.setLayout(new BorderLayout());
-/*      */     
-/*  189 */     this.txtArea.setColumns(20);
-/*  190 */     this.txtArea.setFont(new Font("Lucida Sans", 1, 10));
-/*  191 */     this.txtArea.setRows(5);
-/*  192 */     this.jScrollPane1.setViewportView(this.txtArea);
-/*      */     
-/*  194 */     this.jPanel4.add(this.jScrollPane1, "Center");
-/*      */     
-/*  196 */     this.panBtns.add(this.jPanel4, "Center");
-/*      */     
-/*  198 */     this.jPanel3.setPreferredSize(new Dimension(366, 20));
-/*      */     
-/*  200 */     GroupLayout jPanel3Layout = new GroupLayout(this.jPanel3);
-/*  201 */     this.jPanel3.setLayout(jPanel3Layout);
-/*  202 */     jPanel3Layout.setHorizontalGroup(jPanel3Layout
-/*  203 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  204 */         .addGap(0, 420, 32767));
-/*      */     
-/*  206 */     jPanel3Layout.setVerticalGroup(jPanel3Layout
-/*  207 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  208 */         .addGap(0, 20, 32767));
-/*      */ 
-/*      */     
-/*  211 */     this.panBtns.add(this.jPanel3, "South");
-/*      */     
-/*  213 */     this.jLabel2.setText("Nombres:");
-/*      */     
-/*  215 */     this.jLabel3.setText("Apellidos:");
-/*      */     
-/*  217 */     this.jTNombres.setEditable(false);
-/*  218 */     this.jTNombres.addActionListener(new ActionListener() {
-/*      */           public void actionPerformed(ActionEvent evt) {
-/*  220 */             CapturaHuella.this.jTNombresActionPerformed(evt);
-/*      */           }
-/*      */         });
-/*      */     
-/*  224 */     this.jTApellidos.setEditable(false);
-/*      */     
-/*  226 */     this.jLabel5.setText("Cedula:");
-/*      */     
-/*  228 */     this.jTcedula.setEditable(false);
-/*      */     
-/*  230 */     this.jLabel1.setIcon(new ImageIcon(getClass().getResource("/imagenes/logo-gap-X.jpeg")));
-/*  231 */     this.jLabel1.setText("jLabel1");
-/*      */     
-/*  233 */     GroupLayout layout = new GroupLayout(getContentPane());
-/*  234 */     getContentPane().setLayout(layout);
-/*  235 */     layout.setHorizontalGroup(layout
-/*  236 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  237 */         .addGroup(layout.createSequentialGroup()
-/*  238 */           .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  239 */             .addComponent(this.panHuellas, -1, 432, 32767)
-/*  240 */             .addComponent(this.panBtns, -2, 432, -2))
-/*  241 */           .addGap(18, 18, 18)
-/*  242 */           .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  243 */             .addGroup(layout.createSequentialGroup()
-/*  244 */               .addComponent(this.jLabel3)
-/*  245 */               .addGap(18, 18, 18)
-/*  246 */               .addComponent(this.jTApellidos, -2, 134, -2)
-/*  247 */               .addGap(0, 0, 32767))
-/*  248 */             .addGroup(layout.createSequentialGroup()
-/*  249 */               .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  250 */                 .addGroup(layout.createSequentialGroup()
-/*  251 */                   .addComponent(this.jLabel2)
-/*  252 */                   .addGap(18, 18, 18)
-/*  253 */                   .addComponent(this.jTNombres, -2, 134, -2)
-/*  254 */                   .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-/*  255 */                   .addComponent(this.jLabel5)
-/*  256 */                   .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-/*  257 */                   .addComponent(this.jTcedula, -2, 90, -2)
-/*  258 */                   .addGap(0, 0, 32767))
-/*  259 */                 .addComponent(this.jLabel1, -1, -1, 32767))
-/*  260 */               .addContainerGap()))));
-/*      */     
-/*  262 */     layout.setVerticalGroup(layout
-/*  263 */         .createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  264 */         .addGroup(layout.createSequentialGroup()
-/*  265 */           .addComponent(this.panHuellas, -1, -1, 32767)
-/*  266 */           .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, -1, 32767)
-/*  267 */           .addComponent(this.panBtns, -2, -1, -2)
-/*  268 */           .addGap(59, 59, 59))
-/*  269 */         .addGroup(layout.createSequentialGroup()
-/*  270 */           .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-/*  271 */             .addGroup(layout.createSequentialGroup()
-/*  272 */               .addGap(27, 27, 27)
-/*  273 */               .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-/*  274 */                 .addComponent(this.jLabel2)
-/*  275 */                 .addComponent(this.jTNombres, -2, -1, -2)))
-/*  276 */             .addGroup(layout.createSequentialGroup()
-/*  277 */               .addGap(40, 40, 40)
-/*  278 */               .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-/*  279 */                 .addComponent(this.jLabel5)
-/*  280 */                 .addComponent(this.jTcedula, -2, -1, -2))))
-/*  281 */           .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-/*  282 */           .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-/*  283 */             .addComponent(this.jLabel3)
-/*  284 */             .addComponent(this.jTApellidos, -2, -1, -2))
-/*  285 */           .addGap(18, 18, 18)
-/*  286 */           .addComponent(this.jLabel1, -2, 333, -2)
-/*  287 */           .addContainerGap(-1, 32767)));
-/*      */ 
-/*      */     
-/*  290 */     setSize(new Dimension(812, 512));
-/*  291 */     setLocationRelativeTo((Component)null);
-/*      */   }
-/*      */ 
-/*      */   
+  // ══════════════════════════════════════════════════════════════════
+  // GAP COLOR PALETTE — modifica aquí para cambiar toda la paleta UI
+  // ══════════════════════════════════════════════════════════════════
+  private static final Color C_HEADER_BG     = new Color(64,  121, 150); // --primary-hover  hsl(200,40%,42%)
+  private static final Color C_ACCENT        = new Color(80,  137, 165); // --primary        hsl(200,35%,48%)
+  private static final Color C_DANGER        = new Color(220, 40,  40);  // --destructive    hsl(0,72%,51%)
+  private static final Color C_BG            = new Color(243, 245, 247); // --muted          hsl(210,20%,96%)
+  private static final Color C_CARD          = Color.WHITE;              // --card
+  private static final Color C_BORDER        = new Color(218, 224, 231); // --border         hsl(214,20%,88%)
+  private static final Color C_INPUT_BG      = new Color(243, 245, 247); // --muted (inputs)
+  private static final Color C_MUTED_TEXT    = new Color(99,  114, 136); // --muted-fg       hsl(215,16%,46%)
+  private static final Color C_STATUS_ON_FG  = new Color(22,  101, 52);  // lector activo — texto
+  private static final Color C_STATUS_ON_BG  = new Color(220, 252, 231); // lector activo — fondo
+  private static final Color C_STATUS_OFF_FG = new Color(185, 28,  28);  // desconectado  — texto
+  private static final Color C_STATUS_OFF_BG = new Color(254, 226, 226); // desconectado  — fondo
+  private static final Color C_DARK_TEXT     = new Color(29,  37,  48);  // --foreground   texto oscuro botones
+
+  private void initComponents() {
+    // Unused but declared field references
+    this.jPanel2 = new JPanel();
+    this.jPanel3 = new JPanel();
+    this.jPanel4 = new JPanel();
+    this.panBtns = new JPanel();
+
+    // Aliases de color — valores definidos en las constantes de clase arriba
+    Color darkBlue  = C_HEADER_BG;
+    Color accentBlue= C_ACCENT;
+    Color redBtn    = C_DANGER;
+    Color bgGray    = C_BG;
+    Color cardBg    = C_CARD;
+    Color borderClr = C_BORDER;
+    Color inputBg   = C_INPUT_BG;
+    Color mutedText = C_MUTED_TEXT;
+
+    // Window
+    setDefaultCloseOperation(2);
+    setTitle("GAP Sistema \u2014 Control de Marcaci\u00f3n");
+    setResizable(true);
+    setMinimumSize(new Dimension(540, 560));
+    addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent evt) { CapturaHuella.this.formWindowClosing(evt); }
+      public void windowOpened(WindowEvent evt)  { CapturaHuella.this.formWindowOpened(evt);  }
+    });
+
+    getContentPane().setBackground(bgGray);
+    getContentPane().setLayout(new BorderLayout());
+
+    // ══════════════════ HEADER ══════════════════
+    JPanel headerPanel = new JPanel(new BorderLayout(14, 0));
+    headerPanel.setBackground(darkBlue);
+    headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 16, 10, 20));
+
+    // Logo (cargarYConfigurarImagen sets the icon after init)
+    this.jLabel1 = new JLabel();
+    this.jLabel1.setPreferredSize(new Dimension(140, 90));
+    this.jLabel1.setHorizontalAlignment(JLabel.CENTER);
+    this.jLabel1.setVerticalAlignment(JLabel.CENTER);
+    headerPanel.add(this.jLabel1, BorderLayout.WEST);
+
+    JLabel lblTitle = new JLabel("Control de Marcaci\u00f3n");
+    lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+    lblTitle.setForeground(Color.WHITE);
+    JLabel lblSubTitle = new JLabel("Sistema GAP  \u00b7  Biometr\u00eda Dactilar");
+    lblSubTitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+    lblSubTitle.setForeground(mutedText);
+    JPanel headerText = new JPanel(new GridLayout(2, 1, 0, 2));
+    headerText.setOpaque(false);
+    headerText.add(lblTitle);
+    headerText.add(lblSubTitle);
+    headerPanel.add(headerText, BorderLayout.CENTER);
+    getContentPane().add(headerPanel, BorderLayout.NORTH);
+
+    // ══════════════════ CONTENT (GridBagLayout con pesos) ══════════════════
+    JPanel contentPanel = new JPanel(new GridBagLayout());
+    contentPanel.setBackground(bgGray);
+    contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.gridx   = 0;
+    gbc.weightx = 1.0;
+    gbc.fill    = GridBagConstraints.HORIZONTAL;
+
+    // (txtArea kept initialized but not shown — used internally)
+    this.txtArea = new javax.swing.JTextPane();
+    this.txtArea.setContentType("text/html");
+    this.txtArea.setEditable(false);
+
+    // ─── VISTA PREVIA HUELLA (crece con la ventana) ──────────────
+    this.panHuellas = new JPanel(new BorderLayout(0, 8));
+    this.panHuellas.setBackground(cardBg);
+    this.panHuellas.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(borderClr, 1),
+        BorderFactory.createEmptyBorder(12, 14, 12, 14)));
+    // Header row: título + badge de conexión
+    JPanel fpHeader = new JPanel(new BorderLayout(8, 0));
+    fpHeader.setOpaque(false);
+    JLabel fpTitle = new JLabel("Coloque su dedo en el lector");
+    fpTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+    fpTitle.setForeground(darkBlue);
+    fpHeader.add(fpTitle, BorderLayout.WEST);
+    this.lblSensorStatus = new JLabel("  \u25CF  Desconectado  ");
+    this.lblSensorStatus.setFont(new Font("Segoe UI", Font.BOLD, 11));
+    this.lblSensorStatus.setForeground(C_STATUS_OFF_FG);
+    this.lblSensorStatus.setBackground(C_STATUS_OFF_BG);
+    this.lblSensorStatus.setOpaque(true);
+    this.lblSensorStatus.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
+    fpHeader.add(this.lblSensorStatus, BorderLayout.EAST);
+    this.panHuellas.add(fpHeader, BorderLayout.NORTH);
+    this.jPanel1 = new JPanel(new BorderLayout());
+    this.jPanel1.setBackground(inputBg);
+    this.jPanel1.setBorder(BorderFactory.createLineBorder(borderClr, 1));
+    this.jPanel1.setMinimumSize(new Dimension(460, 360));
+    this.jPanel1.setPreferredSize(new Dimension(460, 480));
+    this.lblImagenHuella = new JLabel("Esperando huella...", JLabel.CENTER);
+    this.lblImagenHuella.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+    this.lblImagenHuella.setForeground(mutedText);
+    this.jPanel1.add(this.lblImagenHuella, BorderLayout.CENTER);
+    this.panHuellas.add(this.jPanel1, BorderLayout.CENTER);
+    // weighty=1 => este panel se lleva el espacio sobrante
+    gbc.gridy = 0; gbc.weighty = 1.0; gbc.fill = GridBagConstraints.BOTH; gbc.insets = new Insets(0, 0, 8, 0);
+    contentPanel.add(this.panHuellas, gbc);
+
+    // ─── DATOS IDENTIFICADOS ──────────────────────
+    JPanel infoCard = new JPanel(new GridBagLayout());
+    infoCard.setBackground(cardBg);
+    infoCard.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(borderClr, 1),
+        BorderFactory.createEmptyBorder(10, 14, 10, 14)));
+    GridBagConstraints ic = new GridBagConstraints();
+    ic.fill   = GridBagConstraints.HORIZONTAL;
+    ic.anchor = GridBagConstraints.WEST;
+
+    ic.gridx = 0; ic.gridy = 0; ic.gridwidth = 4; ic.weightx = 1.0; ic.insets = new Insets(0, 0, 6, 0);
+    JLabel infoTitle = new JLabel("Trabajador identificado");
+    infoTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+    infoTitle.setForeground(darkBlue);
+    infoCard.add(infoTitle, ic);
+
+    ic.gridy = 1; ic.gridwidth = 1; ic.weightx = 0; ic.fill = GridBagConstraints.NONE; ic.insets = new Insets(3, 0, 3, 10);
+    this.jLabel5 = new JLabel("C\u00e9dula:");
+    this.jLabel5.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    infoCard.add(this.jLabel5, ic);
+    ic.gridx = 1; ic.gridwidth = 3; ic.fill = GridBagConstraints.HORIZONTAL; ic.weightx = 1.0; ic.insets = new Insets(3, 0, 3, 0);
+    this.jTcedula = new JTextField();
+    this.jTcedula.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    this.jTcedula.setEditable(false);
+    this.jTcedula.setBackground(inputBg);
+    this.jTcedula.setOpaque(false);
+    this.jTcedula.setBorder(new RoundedInputBorder(borderClr, 10));
+    infoCard.add(this.jTcedula, ic);
+
+    ic.gridy = 2; ic.gridx = 0; ic.gridwidth = 1; ic.fill = GridBagConstraints.NONE; ic.weightx = 0; ic.insets = new Insets(3, 0, 3, 10);
+    this.jLabel2 = new JLabel("Nombres:");
+    this.jLabel2.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    infoCard.add(this.jLabel2, ic);
+    ic.gridx = 1; ic.gridwidth = 3; ic.fill = GridBagConstraints.HORIZONTAL; ic.weightx = 1.0; ic.insets = new Insets(3, 0, 3, 0);
+    this.jTNombres = new JTextField();
+    this.jTNombres.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    this.jTNombres.setEditable(false);
+    this.jTNombres.setBackground(inputBg);
+    this.jTNombres.setOpaque(false);
+    this.jTNombres.setBorder(new RoundedInputBorder(borderClr, 10));
+    this.jTNombres.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) { CapturaHuella.this.jTNombresActionPerformed(evt); }
+    });
+    infoCard.add(this.jTNombres, ic);
+
+    ic.gridy = 3; ic.gridx = 0; ic.gridwidth = 1; ic.fill = GridBagConstraints.NONE; ic.weightx = 0; ic.insets = new Insets(3, 0, 3, 10);
+    this.jLabel3 = new JLabel("Apellidos:");
+    this.jLabel3.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    infoCard.add(this.jLabel3, ic);
+    ic.gridx = 1; ic.gridwidth = 3; ic.fill = GridBagConstraints.HORIZONTAL; ic.weightx = 1.0; ic.insets = new Insets(3, 0, 3, 0);
+    this.jTApellidos = new JTextField();
+    this.jTApellidos.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    this.jTApellidos.setEditable(false);
+    this.jTApellidos.setBackground(inputBg);
+    this.jTApellidos.setOpaque(false);
+    this.jTApellidos.setBorder(new RoundedInputBorder(borderClr, 10));
+    infoCard.add(this.jTApellidos, ic);
+
+    gbc.gridy = 1; gbc.weighty = 0; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.insets = new Insets(0, 0, 8, 0);
+    contentPanel.add(infoCard, gbc);
+
+    // ─── BOTONES ──────────────────────────────────
+    JPanel btnCard = new JPanel(new GridBagLayout());
+    btnCard.setBackground(cardBg);
+    btnCard.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(borderClr, 1),
+        BorderFactory.createEmptyBorder(12, 14, 12, 14)));
+    GridBagConstraints bc = new GridBagConstraints();
+    bc.fill    = GridBagConstraints.HORIZONTAL;
+    bc.weightx = 1.0;
+    bc.gridy   = 0;
+
+    bc.gridx = 0; bc.insets = new Insets(0, 0, 0, 8);
+    this.btnIdentificar = new JButton("Registrar / Editar Huella");
+    applyBtnStyle(this.btnIdentificar, accentBlue, C_DARK_TEXT);
+    this.btnIdentificar.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) { CapturaHuella.this.btnIdentificarActionPerformed(evt); }
+    });
+    btnCard.add(this.btnIdentificar, bc);
+
+    bc.gridx = 1; bc.insets = new Insets(0, 8, 0, 0); bc.weightx = 0.35;
+    this.btnSalir = new JButton("Salir");
+    applyBtnStyle(this.btnSalir, redBtn, Color.WHITE);
+    this.btnSalir.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) { CapturaHuella.this.btnSalirActionPerformed(evt); }
+    });
+    btnCard.add(this.btnSalir, bc);
+
+    gbc.gridy = 2; gbc.weighty = 0; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.insets = new Insets(0, 0, 0, 0);
+    contentPanel.add(btnCard, gbc);
+
+    getContentPane().add(contentPanel, BorderLayout.CENTER);
+    setSize(new Dimension(620, 720));
+    setLocationRelativeTo(null);
+  }
+
+  private void applyBtnStyle(JButton btn, Color bg, Color fg) {
+    btn.setBackground(bg);
+    btn.setForeground(fg);
+    btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+    btn.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+    btn.setFocusPainted(false);
+    btn.setOpaque(true);
+    btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+  }
+
+  private static class RoundedInputBorder implements javax.swing.border.Border {
+    private final Color stroke;
+    private final int r;
+    RoundedInputBorder(Color stroke, int r) { this.stroke = stroke; this.r = r; }
+    public java.awt.Insets getBorderInsets(Component c) { return new java.awt.Insets(6, 10, 6, 10); }
+    public boolean isBorderOpaque() { return false; }
+    public void paintBorder(Component c, java.awt.Graphics g, int x, int y, int w, int h) {
+      java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+      g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+      g2.setColor(stroke);
+      g2.setStroke(new java.awt.BasicStroke(1.2f));
+      g2.drawRoundRect(x, y, w - 1, h - 1, r, r);
+      g2.dispose();
+    }
+  }
+
+  private static javax.swing.JTextField roundedField(Color bg, Color border, int radius) {
+    return new javax.swing.JTextField() {
+      { setOpaque(false); setBorder(new RoundedInputBorder(border, radius)); }
+      @Override protected void paintComponent(java.awt.Graphics g) {
+        java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(bg);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+        g2.dispose();
+        super.paintComponent(g);
+      }
+    };
+  }
+
+
 /*      */   private void btnSalirActionPerformed(ActionEvent evt) {
 /*  296 */     dispose();
 /*      */   }
@@ -725,15 +796,16 @@ import java.awt.Component;
 /*      */ 
 /*      */     
 /*  723 */     this.con = new ConexionBD(); try {
-/*      */       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+/*      */       UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 /*      */     } catch (Exception e) {
 /*      */       JOptionPane.showMessageDialog(null, "Imposible modificar el tema visual", "Lookandfeel inválido.", 0);
-/*      */     } 
+/*      */     }
 /*      */     initComponents();
 /*      */     cargarYConfigurarImagen();
 /*      */     this.btnIdentificar.setEnabled(true);
 /*      */     this.txtArea.setEditable(false);
-/*      */     buscarPorCedula(); } static DPFPEnrollment Reclutador2 = DPFPGlobal.getEnrollmentFactory().createEnrollment(); private DPFPVerification Verificador; private DPFPTemplate template; public static String TEMPLATE_PROPERTY = "template"; public DPFPFeatureSet featuresinscripcion; public DPFPFeatureSet featuresverificacion; ConexionBD con; private JButton btnIdentificar; private JButton btnSalir; private JLabel jLabel1; private JLabel jLabel2; private JLabel jLabel3; private JLabel jLabel5; private JPanel jPanel1; private JPanel jPanel2; private JPanel jPanel3; private JPanel jPanel4; private JScrollPane jScrollPane1; private JTextField jTApellidos; public void guardarHuella() { guardarHuellaComoBase64(); } private JTextField jTNombres; private JTextField jTcedula; private JLabel lblImagenHuella; private JPanel panBtns; private JPanel panHuellas; private JTextArea txtArea; private Image imagenOriginal; protected void Iniciar() { this.Lector.addDataListener((DPFPDataListener)new DPFPDataAdapter() { public void dataAcquired(final DPFPDataEvent e) { SwingUtilities.invokeLater(new Runnable() { public void run() { CapturaHuella.this.EnviarTexto("La Huella Digital ha sido Capturada"); CapturaHuella.this.ProcesarCaptura(e.getSample()); } }
+/*      */     cargarDispositivoBiometrico();
+/*      */     buscarPorCedula(); } static DPFPEnrollment Reclutador2 = DPFPGlobal.getEnrollmentFactory().createEnrollment(); private DPFPVerification Verificador; private DPFPTemplate template; public static String TEMPLATE_PROPERTY = "template"; public DPFPFeatureSet featuresinscripcion; public DPFPFeatureSet featuresverificacion; ConexionBD con; private JButton btnIdentificar; private JButton btnSalir; private JLabel jLabel1; private JLabel jLabel2; private JLabel jLabel3; private JLabel jLabel5; private JPanel jPanel1; private JPanel jPanel2; private JPanel jPanel3; private JPanel jPanel4; private JScrollPane jScrollPane1; private JTextField jTApellidos; public void guardarHuella() { guardarHuellaComoBase64(); } private JTextField jTNombres; private JTextField jTcedula; private JLabel lblImagenHuella; private JPanel panBtns; private JPanel panHuellas; private javax.swing.JTextPane txtArea; private JLabel lblSensorStatus; private Image imagenOriginal; protected void Iniciar() { this.Lector.addDataListener((DPFPDataListener)new DPFPDataAdapter() { public void dataAcquired(final DPFPDataEvent e) { SwingUtilities.invokeLater(new Runnable() { public void run() { CapturaHuella.this.EnviarTexto("La Huella Digital ha sido Capturada"); CapturaHuella.this.ProcesarCaptura(e.getSample()); } }
 /*      */               ); } }
 /*      */       ); this.Lector.addReaderStatusListener((DPFPReaderStatusListener)new DPFPReaderStatusAdapter() { public void readerConnected(DPFPReaderStatusEvent e) { SwingUtilities.invokeLater(new Runnable() { public void run() { CapturaHuella.this.EnviarTexto("El Sensor de Huella Digital esta Activado o Conectado"); } }
 /*      */               ); } public void readerDisconnected(DPFPReaderStatusEvent e) { SwingUtilities.invokeLater(new Runnable() { public void run() { CapturaHuella.this.EnviarTexto("El Sensor de Huella Digital esta Desactivado o no Conectado"); } }
@@ -794,7 +866,7 @@ import java.awt.Component;
 /*  865 */       EnviarTexto("Buscando en base de datos...");
 /*      */ 
 /*      */       
-/*  868 */       String sql = "SELECT numero_documento, nombres, apellidos, huella_dactilar FROM employees WHERE huella_dactilar IS NOT NULL";
+/*  868 */       String sql = "SELECT id, employer_id, numero_documento, nombres, apellidos, huella_dactilar FROM employees WHERE huella_dactilar IS NOT NULL";
 /*  869 */       PreparedStatement identificarStmt = c.prepareStatement(sql);
 /*  870 */       ResultSet rs = identificarStmt.executeQuery();
 /*      */       
@@ -838,12 +910,44 @@ import java.awt.Component;
 /*  909 */           this.jTNombres.setText(rs.getString("nombres"));
 /*  910 */           this.jTApellidos.setText(rs.getString("apellidos"));
 /*  911 */           this.jTcedula.setText(cedula);
-/*      */           
-/*  913 */           EnviarTexto("✓ IDENTIFICADO: " + nombreCompleto);
-/*      */           
-/*  915 */           mostrarBienvenidaAutoCerrar("Bienvenido(a) " + nombreCompleto);
-/*      */           
-/*      */           // insertEntrada() removido - marcaentrada() en DibujarHuella() registra en tabla marcaciones
+/*      */           this.cachedEmployeeId = rs.getString("id");
+/*      */           this.cachedEmployerId = rs.getString("employer_id");
+/*      */           // Buscar turno activo para hoy
+/*      */           this.cachedTurnoId = null;
+/*      */           try (java.sql.PreparedStatement turnoStmt = c.prepareStatement(
+/*      */               "SELECT id, hora_inicio, hora_fin FROM turnos " +
+/*      */               "WHERE employee_id = ?::uuid AND employer_id = ?::uuid " +
+/*      */               "AND fecha_inicio <= CURRENT_DATE AND fecha_fin >= CURRENT_DATE " +
+/*      */               "ORDER BY fecha_fin DESC LIMIT 1")) {
+/*      */             turnoStmt.setString(1, this.cachedEmployeeId);
+/*      */             turnoStmt.setString(2, this.cachedEmployerId);
+/*      */             java.sql.ResultSet turnoRs = turnoStmt.executeQuery();
+/*      */             if (turnoRs.next()) {
+/*      */               this.cachedTurnoId = turnoRs.getString("id");
+/*      */               String hIni = turnoRs.getString("hora_inicio");
+/*      */               String hFin = turnoRs.getString("hora_fin");
+/*      */               if (hIni != null && hFin != null) {
+/*      */                 final String turnoText = hIni.substring(0, 5) + " \u2013 " + hFin.substring(0, 5);
+/*      */                 SwingUtilities.invokeLater(new Runnable() { public void run() {
+/*      */                   if (CapturaHuella.this.jLblTurno != null) {
+/*      */                     CapturaHuella.this.jLblTurno.setText(turnoText);
+/*      */                     CapturaHuella.this.jLblTurno.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
+/*      */                     CapturaHuella.this.jLblTurno.setForeground(C_DARK_TEXT);
+/*      */                   }
+/*      */                 } });
+/*      */               }
+/*      */             } else {
+/*      */               SwingUtilities.invokeLater(new Runnable() { public void run() {
+/*      */                 if (CapturaHuella.this.jLblTurno != null) {
+/*      */                   CapturaHuella.this.jLblTurno.setText("Sin turno asignado");
+/*      */                   CapturaHuella.this.jLblTurno.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 12));
+/*      */                   CapturaHuella.this.jLblTurno.setForeground(C_MUTED_TEXT);
+/*      */                 }
+/*      */               } });
+/*      */             }
+/*      */             turnoRs.close();
+/*      */           } catch (Exception ex) { System.err.println("Error al buscar turno: " + ex.getMessage()); }
+/*      */           EnviarTexto("\u2713 IDENTIFICADO: " + nombreCompleto);
 /*      */           break;
 /*      */         } 
 /*      */       } 
@@ -865,9 +969,131 @@ import java.awt.Component;
 /*  937 */     catch (Exception e)
 /*  938 */     { System.err.println("Error general: " + e.getMessage()); }  }
 /*      */   private void verificarHuellaEspecifica(String cedula) { System.out.println("verificarHuellaEspecifica deshabilitado"); }
+
+/*      */   /** Extrae el valor de cadena de una clave en un JSON simple (sin libreria externa). */
+/*      */   private static String jsonStr(String json, String key, String def) {
+/*      */     if (json == null) return def;
+/*      */     java.util.regex.Matcher m = java.util.regex.Pattern
+/*      */       .compile("\"" + key + "\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"")
+/*      */       .matcher(json);
+/*      */     return m.find() ? m.group(1) : def;
+/*      */   }
+/*      */   /** Extrae el valor booleano de una clave en un JSON simple. */
+/*      */   private static boolean jsonBool(String json, String key, boolean def) {
+/*      */     if (json == null) return def;
+/*      */     java.util.regex.Matcher m = java.util.regex.Pattern
+/*      */       .compile("\"" + key + "\"\\s*:\\s*(true|false)")
+/*      */       .matcher(json);
+/*      */     return m.find() ? "true".equals(m.group(1)) : def;
+/*      */   }
+
+/*      */   private void cargarDispositivoBiometrico() {
+/*      */     final String[] macHolder = { null };
+/*      */     try {
+/*      */       // Leer MAC address del primer adaptador de red activo
+/*      */       String macDetectada = null;
+/*      */       java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
+/*      */       while (interfaces.hasMoreElements()) {
+/*      */         java.net.NetworkInterface ni = interfaces.nextElement();
+/*      */         if (ni.isLoopback() || !ni.isUp()) continue;
+/*      */         byte[] mac = ni.getHardwareAddress();
+/*      */         if (mac == null || mac.length == 0) continue;
+/*      */         StringBuilder sb = new StringBuilder();
+/*      */         for (int i = 0; i < mac.length; i++) {
+/*      */           sb.append(String.format("%02X", mac[i]));
+/*      */           if (i < mac.length - 1) sb.append(":");
+/*      */         }
+/*      */         macDetectada = sb.toString();
+/*      */         break;
+/*      */       }
+/*      */       if (macDetectada == null) {
+/*      */         System.out.println("[Biometrico] No se pudo detectar la MAC address.");
+/*      */         return;
+/*      */       }
+/*      */       macHolder[0] = macDetectada;
+/*      */       final String macFinal = macDetectada;
+/*      */       System.out.println("[Biometrico] MAC detectada: " + macFinal);
+/*      */       // Consultar BD
+/*      */       ConexionBD bdConf = new ConexionBD();
+/*      */       try (java.sql.Connection cn = bdConf.conectar();
+/*      */            java.sql.PreparedStatement ps = cn.prepareStatement(
+/*      */              "SELECT d.id, d.nombre, d.kiosko_id, k.nombre AS kiosko_nombre, " +
+/*      */              "k.direccion AS kiosko_direccion, k.latitud, k.longitud " +
+/*      */              "FROM dispositivos_biometricos d " +
+/*      */              "LEFT JOIN kioskos k ON k.id = d.kiosko_id " +
+/*      */              "WHERE UPPER(d.mac_address) = UPPER(?) AND d.estado = 'activo' LIMIT 1")) {
+/*      */         ps.setString(1, macFinal);
+/*      */         java.sql.ResultSet rs = ps.executeQuery();
+/*      */         if (rs.next()) {
+/*      */           this.cachedDispositivoRegistrado = true;
+/*      */           this.cachedKioskoId = rs.getString("kiosko_id");
+/*      */           String kDir = rs.getString("kiosko_direccion");
+/*      */           String kNom = rs.getString("kiosko_nombre");
+/*      */           String kLat = rs.getString("latitud");
+/*      */           String kLon = rs.getString("longitud");
+/*      */           // UI: mostrar siempre el nombre de la sede
+/*      */           this.cachedKioskoNombre = kNom;
+/*      */           // BD: guardar direccion o coordenadas como ubicacion
+/*      */           if (kDir != null && !kDir.trim().isEmpty()) {
+/*      */             this.cachedKioskoUbicacion = kDir.trim();
+/*      */           } else if (kLat != null && kLon != null) {
+/*      */             this.cachedKioskoUbicacion = kLat + ", " + kLon;
+/*      */           } else {
+/*      */             this.cachedKioskoUbicacion = kNom;
+/*      */           }
+/*      */           final String dispNombre = rs.getString("nombre");
+/*      */           final String sedeNombre = this.cachedKioskoNombre != null ? this.cachedKioskoNombre : "Sin sede asignada";
+/*      */           final boolean sinSede = (this.cachedKioskoId == null || this.cachedKioskoId.isEmpty());
+/*      */           System.out.println("[Biometrico] Dispositivo: " + dispNombre + " | Sede: " + sedeNombre);
+/*      */           SwingUtilities.invokeLater(new Runnable() { public void run() {
+/*      */             if (sinSede) {
+/*      */               setTitle("GAP \u2014 " + dispNombre + "  |  \u26A0 SIN SEDE ASIGNADA");
+/*      */               EnviarTexto("ADVERTENCIA: El dispositivo '" + dispNombre + "' no tiene sede asignada. Las marcaciones seran bloqueadas.");
+/*      */             } else {
+/*      */               setTitle("GAP \u2014 " + dispNombre + "  |  Sede: " + sedeNombre);
+/*      */               EnviarTexto("Dispositivo: " + dispNombre + "  |  Sede: " + sedeNombre);
+/*      */             }
+/*      */           } });
+/*      */         } else {
+/*      */           System.out.println("[Biometrico] Dispositivo no registrado para MAC: " + macFinal);
+/*      */           SwingUtilities.invokeLater(new Runnable() { public void run() {
+/*      */             setTitle("GAP \u2014 Control de Marcacion  |  MAC: " + macFinal + "  [Sin registrar]");
+/*      */             EnviarTexto("AVISO: Dispositivo no registrado. MAC: " + macFinal);
+/*      */             EnviarTexto("Registre este dispositivo en el sistema web con la MAC: " + macFinal);
+/*      */           } });
+/*      */         }
+/*      */         rs.close();
+/*      */       }
+/*      */     } catch (Exception ex) {
+/*      */       System.err.println("[Biometrico] Error al cargar dispositivo: " + ex.getMessage());
+/*      */       final String macErr = macHolder[0] != null ? macHolder[0] : "desconocida";
+/*      */       SwingUtilities.invokeLater(new Runnable() { public void run() {
+/*      */         EnviarTexto("Error al consultar dispositivo. MAC local: " + macErr);
+/*      */       } });
+/*      */     }
+/*      */   }
   public void DibujarHuella(Image image) { this.lblImagenHuella.setIcon(new ImageIcon(image.getScaledInstance(this.lblImagenHuella.getWidth(), this.lblImagenHuella.getHeight(), 1))); repaint(); try { identificarHuella(); try { cambiodia(); } catch (SQLException ex) { Logger.getLogger(CapturaHuella.class.getName()).log(Level.SEVERE, (String)null, ex); }  marcaentrada(); this.Reclutador.clear(); } catch (IOException ex) { Logger.getLogger(CapturaHuella.class.getName()).log(Level.SEVERE, (String)null, ex); }  }
 /*      */   public void EstadoHuellas() { EnviarTexto("Muestra de Huellas Necesarias para Guardar Template " + this.Reclutador.getFeaturesNeeded()); EnviarTexto("LOS ULTIMOS DATOS INGRESADOS SON:  \n" + this.jTNombres.getText() + " " + this.jTApellidos.getText()); }
-/*      */   public void EnviarTexto(String string) { this.txtArea.append(string + "\n"); }
+/*      */   private void appendHtmlLog(String html) {
+    try {
+      javax.swing.text.html.HTMLDocument doc = (javax.swing.text.html.HTMLDocument) this.txtArea.getDocument();
+      javax.swing.text.html.HTMLEditorKit kit = (javax.swing.text.html.HTMLEditorKit) this.txtArea.getEditorKit();
+      kit.insertHTML(doc, doc.getLength(), html, 0, 0, null);
+    } catch (Exception ex) {}
+    this.txtArea.setCaretPosition(this.txtArea.getDocument().getLength());
+  }
+  public void EnviarTexto(String string) {
+    if (this.lblSensorStatus == null) return;
+    if (string.contains("no Conectado") || string.contains("Desactivado") || string.contains("No se est")) {
+      this.lblSensorStatus.setText("  \u25CF  Desconectado  ");
+      this.lblSensorStatus.setForeground(C_STATUS_OFF_FG);
+      this.lblSensorStatus.setBackground(C_STATUS_OFF_BG);
+    } else if (string.contains("Activado") || string.contains("Conectado") || string.contains("Utilizando")) {
+      this.lblSensorStatus.setText("  \u25CF  Lector Activo  ");
+      this.lblSensorStatus.setForeground(C_STATUS_ON_FG);
+      this.lblSensorStatus.setBackground(C_STATUS_ON_BG);
+    }
+  }
 /*      */   public void start() { this.Lector.startCapture(); EnviarTexto("Utilizando el Lector de Huella Dactilar "); }
 /*      */   public void stop() { this.Lector.stopCapture(); EnviarTexto("No se está usando el Lector de Huella Dactilar "); }
 /*  945 */   public DPFPTemplate getTemplate() { return this.template; } public void setTemplate(DPFPTemplate template) { DPFPTemplate old = this.template; this.template = template; firePropertyChange(TEMPLATE_PROPERTY, old, template); } private void mostrarBienvenidaAutoCerrar(String mensaje) { JOptionPane pane = new JOptionPane(mensaje, 1);
@@ -1446,46 +1672,115 @@ import java.awt.Component;
 /*      */ 
 /*      */ 
 /*      */   
+/*      */   private void mostrarAviso(String titulo, String emoji, String linea1, String linea2, String hora, java.awt.Color color) {
+/*      */     String hex = String.format("%06X", color.getRGB() & 0xFFFFFF);
+/*      */     String html = "<html><div style='font-family:Arial;text-align:center;padding:10px'>"
+/*      */       + "<div style='font-size:36px'>" + emoji + "</div>"
+/*      */       + "<div style='font-size:18px;font-weight:bold;color:#" + hex + ";margin-top:8px'>" + linea1 + "</div>"
+/*      */       + "<div style='font-size:14px;color:#555;margin-top:4px'>" + linea2 + "</div>"
+/*      */       + "<div style='font-size:22px;font-weight:bold;color:#222;margin-top:10px;border-top:2px solid #ddd;padding-top:8px'>" + hora + "</div>"
+/*      */       + "</div></html>";
+/*      */     javax.swing.JLabel label = new javax.swing.JLabel(html);
+/*      */     JOptionPane pane = new JOptionPane(label, JOptionPane.PLAIN_MESSAGE);
+/*      */     final JDialog dlg = pane.createDialog(titulo);
+/*      */     dlg.setModal(true); dlg.setVisible(true);
+/*      */   }
+/*      */
 /*      */   private void marcaentrada() {
-/*      */     Date ahora = new Date();
-/*      */     SimpleDateFormat horaFormato = new SimpleDateFormat("HH:mm:ss");
-/*      */     SimpleDateFormat fechaFormato = new SimpleDateFormat("yyyy-MM-dd");
-/*      */     String horaActual = horaFormato.format(ahora);
-/*      */     String fechaHoy = fechaFormato.format(ahora);
+/*      */     if (this.cachedEmployeeId == null) { EnviarTexto("Sin empleado identificado."); return; }
+/*      */     SimpleDateFormat horaDisplay = new SimpleDateFormat("hh:mm a");
+/*      */     String horaLegible = horaDisplay.format(new Date());
+/*      */     String employeeId = this.cachedEmployeeId;
+/*      */     String kioskoId   = this.cachedKioskoId;
+/*      */     // Bloquear marcacion si el dispositivo no esta registrado en dispositivos_biometricos
+/*      */     if (!this.cachedDispositivoRegistrado) {
+/*      */       this.cachedEmployeeId = null; this.cachedEmployerId = null; this.cachedTurnoId = null;
+/*      */       JOptionPane.showMessageDialog(this,
+/*      */         "Este equipo no esta registrado como dispositivo biometrico autorizado.\nNo es posible registrar marcaciones.\n\nContacte al administrador para registrar este dispositivo en el sistema.",
+/*      */         "Dispositivo no autorizado", JOptionPane.ERROR_MESSAGE);
+/*      */       return;
+/*      */     }
+/*      */     // Bloquear marcacion si el dispositivo no tiene sede asignada
+/*      */     if (kioskoId == null || kioskoId.isEmpty()) {
+/*      */       this.cachedEmployeeId = null; this.cachedEmployerId = null; this.cachedTurnoId = null;
+/*      */       JOptionPane.showMessageDialog(this,
+/*      */         "Este dispositivo no tiene una sede asignada.\nNo es posible registrar la marcacion.\n\nContacte al administrador para asignar una sede a este lector.",
+/*      */         "Sede no asignada", JOptionPane.ERROR_MESSAGE);
+/*      */       return;
+/*      */     }
+/*      */     String observaciones = (this.jTObservaciones != null) ? this.jTObservaciones.getText().trim() : "";
+/*      */     this.cachedEmployeeId = null; this.cachedEmployerId = null; this.cachedTurnoId = null;
 /*      */     try {
 /*      */       ConexionBD cc = new ConexionBD();
-/*      */       try (Connection cn = cc.conectar()) {
-/*      */         String numeroDoc = this.jTcedula.getText();
-/*      */         PreparedStatement empStmt = cn.prepareStatement("SELECT id, employer_id FROM employees WHERE numero_documento = ?");
-/*      */         empStmt.setString(1, numeroDoc);
-/*      */         ResultSet empRs = empStmt.executeQuery();
-/*      */         if (!empRs.next()) { System.err.println("Empleado no encontrado: " + numeroDoc); return; }
-/*      */         String employeeId = empRs.getString("id");
-/*      */         String employerId = empRs.getString("employer_id");
-/*      */         empRs.close(); empStmt.close();
-/*      */         PreparedStatement checkStmt = cn.prepareStatement("SELECT id, hora_entrada_real FROM marcaciones WHERE employee_id = ?::uuid AND fecha = ? LIMIT 1");
-/*      */         checkStmt.setString(1, employeeId);
-/*      */         checkStmt.setString(2, fechaHoy);
-/*      */         ResultSet checkRs = checkStmt.executeQuery();
-/*      */         if (checkRs.next()) {
-/*      */           String marcacionId = checkRs.getString("id");
-/*      */           checkRs.close(); checkStmt.close();
-/*      */           PreparedStatement salidaStmt = cn.prepareStatement("UPDATE marcaciones SET hora_salida_real = ?, updated_at = NOW() WHERE id = ?::uuid");
-/*      */           salidaStmt.setString(1, horaActual);
-/*      */           salidaStmt.setString(2, marcacionId);
-/*      */           salidaStmt.executeUpdate(); salidaStmt.close();
-/*      */           EnviarTexto("Salida registrada: " + horaActual);
-/*      */         } else {
-/*      */           checkRs.close(); checkStmt.close();
-/*      */           PreparedStatement insertStmt = cn.prepareStatement("INSERT INTO marcaciones (employee_id, employer_id, fecha, hora_entrada_real, validado, created_at, updated_at) VALUES (?::uuid, ?::uuid, ?, ?, false, NOW(), NOW())");
-/*      */           insertStmt.setString(1, employeeId);
-/*      */           insertStmt.setString(2, employerId);
-/*      */           insertStmt.setString(3, fechaHoy);
-/*      */           insertStmt.setString(4, horaActual);
-/*      */           insertStmt.executeUpdate(); insertStmt.close();
-/*      */           EnviarTexto("Entrada registrada: " + horaActual);
+/*      */       try (Connection cn = cc.conectar();
+/*      */            PreparedStatement ps = cn.prepareStatement(
+/*      */              "SELECT registrar_marcacion_biometrico(?::uuid, ?::uuid, ?)")) {
+/*      */         ps.setString(1, employeeId);
+/*      */         ps.setString(2, kioskoId);
+/*      */         ps.setString(3, observaciones);
+/*      */         ResultSet rs = ps.executeQuery();
+/*      */         if (!rs.next()) {
+/*      */           JOptionPane.showMessageDialog(null, "Sin respuesta del servidor al registrar marcacion.");
+/*      */           return;
+/*      */         }
+/*      */         org.postgresql.util.PGobject pgObj = (org.postgresql.util.PGobject) rs.getObject(1);
+/*      */         String jsonStr = pgObj.getValue();
+/*      */         rs.close();
+/*      */         if (!jsonBool(jsonStr, "success", false)) {
+/*      */           String errorMsg = jsonStr(jsonStr, "error", "Error desconocido");
+/*      */           String code     = jsonStr(jsonStr, "code", "");
+/*      */           if ("JORNADA_COMPLETA".equals(code)) {
+/*      */             mostrarAviso("Jornada completa", "\uD83C\uDFC1", "Jornada ya registrada",
+/*      */               "Tu jornada de hoy ya está completa.", horaLegible, new java.awt.Color(0, 80, 160));
+/*      */           } else if ("ENTRADA_PENDIENTE".equals(code)) {
+/*      */             mostrarAviso("Jornada en curso", "\uD83D\uDED1", "Ya tienes entrada registrada",
+/*      */               "Debes marcar salida primero.", horaLegible, new java.awt.Color(150, 0, 0));
+/*      */           } else {
+/*      */             JOptionPane.showMessageDialog(null, errorMsg, "No se pudo registrar", JOptionPane.WARNING_MESSAGE);
+/*      */           }
+/*      */           EnviarTexto("Error marcacion: " + errorMsg);
+/*      */           return;
+/*      */         }
+/*      */         String tipo   = jsonStr(jsonStr, "tipo_marcacion", "");
+/*      */         String estado = jsonStr(jsonStr, "estado_aprobacion", "APROBADA");
+/*      */         String obs    = jsonStr(jsonStr, "observaciones", "");
+/*      */         boolean porAprobar = "POR_APROBAR".equals(estado);
+/*      */         switch (tipo) {
+/*      */           case "entrada":
+/*      */             mostrarAviso("Entrada registrada", "\uD83D\uDC4B", "\u00A1Bienvenido/a!",
+/*      */               (porAprobar ? "\u26A0 Pendiente aprobacion  \u2022  " : "Entrada registrada  \u2022  ") + obs,
+/*      */               horaLegible, porAprobar ? new java.awt.Color(180, 100, 0) : new java.awt.Color(0, 130, 80));
+/*      */             EnviarTexto((porAprobar ? "[Por aprobar] " : "") + "Entrada registrada");
+/*      */             break;
+/*      */           case "descanso_inicio":
+/*      */             mostrarAviso("Inicio de descanso", "\u2615", "Inicio de descanso registrado",
+/*      */               "\u00A1Disfruta tu descanso!", horaLegible, new java.awt.Color(180, 100, 0));
+/*      */             EnviarTexto("Inicio descanso registrado");
+/*      */             break;
+/*      */           case "descanso_fin":
+/*      */             mostrarAviso("Fin de descanso", "\u2705", "Fin de descanso registrado",
+/*      */               "\u00A1De vuelta al trabajo!", horaLegible, new java.awt.Color(30, 130, 30));
+/*      */             EnviarTexto("Fin descanso registrado");
+/*      */             break;
+/*      */           case "salida":
+/*      */             mostrarAviso("Salida registrada", "\uD83D\uDC4B", "Salida registrada",
+/*      */               (porAprobar ? "\u26A0 Pendiente aprobacion  \u2022  " : "\u00A1Hasta ma\u00F1ana!  \u2022  ") + obs,
+/*      */               horaLegible, porAprobar ? new java.awt.Color(180, 100, 0) : new java.awt.Color(0, 80, 160));
+/*      */             EnviarTexto((porAprobar ? "[Por aprobar] " : "") + "Salida registrada");
+/*      */             break;
+/*      */           default:
+/*      */             EnviarTexto("Marcacion registrada: " + tipo);
 /*      */         }
 /*      */       }
+/*      */       // Limpiar observaciones y turno despues de marcar
+/*      */       SwingUtilities.invokeLater(new Runnable() { public void run() {
+/*      */         if (CapturaHuella.this.jTObservaciones != null) CapturaHuella.this.jTObservaciones.setText("");
+/*      */         if (CapturaHuella.this.jLblTurno != null) {
+/*      */           CapturaHuella.this.jLblTurno.setText("Sin turno asignado");
+/*      */           CapturaHuella.this.jLblTurno.setFont(new java.awt.Font("Segoe UI", java.awt.Font.ITALIC, 12));
+/*      */           CapturaHuella.this.jLblTurno.setForeground(C_MUTED_TEXT);
+/*      */         }
+/*      */       } });
 /*      */     } catch (SQLException ex) {
 /*      */       JOptionPane.showMessageDialog(null, "Error al registrar marcacion: " + ex.getMessage());
 /*      */     }
@@ -1519,7 +1814,7 @@ import java.awt.Component;
 /*      */     }
 /* 1620 */     int iw = this.imagenOriginal.getWidth(null);
 /* 1621 */     int ih = this.imagenOriginal.getHeight(null);
-/* 1622 */     double ratio = Math.min(w / iw, h / ih);
+/* 1622 */     double ratio = Math.min((double)w / iw, (double)h / ih);
 /* 1623 */     int nw = Math.max(1, (int)Math.round(iw * ratio));
 /* 1624 */     int nh = Math.max(1, (int)Math.round(ih * ratio));
 /*      */     
